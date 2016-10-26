@@ -17,7 +17,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 
 @SpringBootApplication
@@ -44,7 +43,6 @@ public class Application {
 			int height = 300;
 
 			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
-			hints.put(EncodeHintType.CHARACTER_SET, StandardCharsets.ISO_8859_1.name());
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
 
 			QRCodeWriter writer = new QRCodeWriter();
