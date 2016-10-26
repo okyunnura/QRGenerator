@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 
 @SpringBootApplication
@@ -42,7 +43,8 @@ public class Application {
 			int width = 300;
 			int height = 300;
 
-			Hashtable hints = new Hashtable();
+			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
+			hints.put(EncodeHintType.CHARACTER_SET, StandardCharsets.ISO_8859_1.name());
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
 
 			QRCodeWriter writer = new QRCodeWriter();
@@ -50,6 +52,9 @@ public class Application {
 			BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix);
 			File file = File.createTempFile("barcode", ".png");
 			ImageIO.write(image, "png", file);
+
+			Runtime runtime = Runtime.getRuntime();
+			runtime.exec("open " + file.getAbsolutePath());
 
 			logger.info("file path:{}", file.getAbsolutePath());
 		} catch (WriterException | IOException e) {
