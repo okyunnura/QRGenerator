@@ -45,9 +45,11 @@ public class Application {
 
 			//QRコードのオプション指定
 			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
-			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
-			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
+			//低補正(L)
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+			//中サイズ(Version30)
 			hints.put(EncodeHintType.QR_VERSION, 30);
+			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
 
 			String contents = new String(zip(), "ISO-8859-1");
 			logger.info("size:" + contents.getBytes("ISO-8859-1").length);
