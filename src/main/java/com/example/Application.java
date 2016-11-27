@@ -49,15 +49,22 @@ public class Application {
 			//QRコードのオプション指定
 			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
 			//低補正(L)
-			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.H);
 			//小サイズ(Version20)
-			hints.put(EncodeHintType.QR_VERSION, 20);
+			hints.put(EncodeHintType.QR_VERSION, 30);
 			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
 
+			int split = 1;
+			int size = 742;
+			int carret = split > 0 ? 1 : 0;
+			int start = split * size + carret;
+			int end = start + size > 1245 ? 1245 : start + size;
+			logger.info("size:{} carret:{} start:{} end:{}", size, carret, start, end);
+
 			//前半
-			byte[] zipContents = Arrays.copyOfRange(zip(original), 0, 858);
+			byte[] zipContents = Arrays.copyOfRange(zip(original), start, end);
 			//後半
-//			byte[] zipContents = Arrays.copyOfRange(zip(original), 859, 1245);
+//			byte[] zipContents = Arrays.copyOfRange(zip(original), 667, 1245);
 			String contents = new String(zipContents, "ISO-8859-1");
 
 			//QRコード出力
