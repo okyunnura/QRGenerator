@@ -19,7 +19,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
@@ -53,10 +52,10 @@ public class Application {
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
 			//小サイズ(Version20)
 			hints.put(EncodeHintType.QR_VERSION, 20);
-			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
+//			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
 
-			//小サイズ低補正での最大バイト数/QR1枚
-			int byteSize = 858 - 1;
+			//小サイズ低補正での最大バイト数/QR1枚 - ヘッダ調整分
+			int byteSize = 858 - 2;
 			//Zip圧縮後のbyte配列
 			byte[] contents = zip(original);
 			int contentsSize = contents.length;
@@ -64,14 +63,14 @@ public class Application {
 			int pageSize = new BigDecimal(contentsSize).divide(new BigDecimal(byteSize), 0, BigDecimal.ROUND_UP).intValue();
 			for (int page = 0; page < pageSize; page++) {
 				int start = page * byteSize + (page > 0 ? 1 : 0);
-				int end = (start + byteSize) > contentsSize ? contentsSize: start + byteSize;
+				int end = (start + byteSize) > contentsSize ? contentsSize : start + byteSize;
 				logger.info("page:{} start:{} end:{}", page, start, end);
 				//QR1枚分のバイトデータ
 				byte[] zipContents = Arrays.copyOfRange(contents, start, end);
 
 				//QRコード出力
 				QRCodeWriter writer = new QRCodeWriter();
-				BitMatrix bitMatrix = writer.encode(zipContents, format, width, height, hints);
+				BitMatrix bitMatrix = writer.encode(page, pageSize - 1, 120, zipContents, format, width, height, hints);
 				BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix);
 				File file = File.createTempFile(String.format("barcode_%02d_", page + 1), ".png");
 				ImageIO.write(image, "png", file);
