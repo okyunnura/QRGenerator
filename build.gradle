@@ -18,8 +18,11 @@ jar {
     baseName = 'qrgenerator'
     version = '0.0.1-SNAPSHOT'
 }
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+
+allprojects {
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+}
 
 repositories {
     mavenCentral()
@@ -29,6 +32,10 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 
-    compile('com.google.zxing:core:3.3.0')
-    compile('com.google.zxing:javase:3.3.0')
+//    compile('com.google.zxing:core:3.3.0')
+    compile('com.google.zxing:javase:3.3.0'){
+        exclude module: 'core'
+    }
+    compile files('libs/core-3.3.1-SNAPSHOT.jar')
+    compile 'commons-codec:commons-codec:1.10'
 }
