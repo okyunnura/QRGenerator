@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.zip.ZipEntry;
@@ -52,12 +53,14 @@ public class Application {
 			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
 			//小サイズ(Version20)
 			hints.put(EncodeHintType.QR_VERSION, 20);
-//			hints.put(EncodeHintType.CHARACTER_SET, Charset.forName("ISO-8859-1").displayName());
 
 			//小サイズ低補正での最大バイト数/QR1枚 - ヘッダ調整分
 			int byteSize = 858 - 2;
 			//Zip圧縮後のbyte配列
-			byte[] contents = zip(original);
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			outputStream.write("CARE01Z\r\n".getBytes(StandardCharsets.UTF_8));
+			outputStream.write(zip(original));
+			byte[] contents = outputStream.toByteArray();
 			int contentsSize = contents.length;
 			//必要QR枚数
 			int pageSize = new BigDecimal(contentsSize).divide(new BigDecimal(byteSize), 0, BigDecimal.ROUND_UP).intValue();
