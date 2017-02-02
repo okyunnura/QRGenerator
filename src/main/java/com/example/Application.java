@@ -7,6 +7,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+import com.google.zxing.qrcode.decoder.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -52,16 +53,6 @@ public class Application {
 			int width = 3000;
 			int height = 3000;
 
-			//QRコードのオプション指定
-			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
-			//低補正(L)
-			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-			//小サイズ(Version20)
-			hints.put(EncodeHintType.QR_VERSION, 20);
-
-			//小サイズ低補正での最大バイト数/QR1枚 - ヘッダ調整分
-			int byteSize = 858 - 2;
-
 			String versionHeader = "CARE01Z\r\n";
 
 			String gzipContent = versionHeader + Base64.getEncoder().encodeToString(compression(original, ZipType.GZIP));
@@ -91,7 +82,35 @@ public class Application {
 			int contentsSize = contents.length();
 
 			//必要QR枚数
-			int pageSize = new BigDecimal(contentsSize).divide(new BigDecimal(byteSize), 0, BigDecimal.ROUND_UP).intValue();
+			int pageSize = 0;
+			//最大バイト数
+			int byteSize = 0;
+			//最大QR枚数
+			int maxQrSize = 4;
+
+			for (int i = 1; i <= 40; i++) {
+				//バージョン毎のサイズ取得
+				Version version = Version.getVersionForNumber(i);
+				Version.ECBlocks blocks = version.getECBlocksForLevel(ErrorCorrectionLevel.L);
+				//バージョンサイズ - ヘッダ分サイズ
+				byteSize = version.getTotalCodewords() - blocks.getTotalECCodewords() - 5;
+
+				//小サイズでの必要枚数計算
+				pageSize = new BigDecimal(contentsSize).divide(new BigDecimal(byteSize), 0, BigDecimal.ROUND_UP).intValue();
+				if (pageSize < maxQrSize) {
+					logger.info("version:{} byteSize:{}", i, byteSize);
+					logger.info("----------------");
+					break;
+				}
+			}
+
+			//QRコードのオプション指定
+			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
+			//低補正(L)
+			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+			//小サイズ(Version20)
+			hints.put(EncodeHintType.QR_VERSION, 20);
+
 			for (int page = 0; page < pageSize; page++) {
 				int start = page * byteSize;
 				int end = (start + byteSize) > contentsSize ? contentsSize : start + byteSize;
