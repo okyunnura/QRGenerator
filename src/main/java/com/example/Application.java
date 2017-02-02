@@ -88,17 +88,22 @@ public class Application {
 			//最大QR枚数
 			int maxQrSize = 4;
 
+			//バージョン
+			Version version = Version.getVersionForNumber(1);
+			//低補正(L)
+			ErrorCorrectionLevel errorLever = ErrorCorrectionLevel.L;
+
 			for (int i = 1; i <= 40; i++) {
 				//バージョン毎のサイズ取得
-				Version version = Version.getVersionForNumber(i);
-				Version.ECBlocks blocks = version.getECBlocksForLevel(ErrorCorrectionLevel.L);
+				version = Version.getVersionForNumber(i);
+				Version.ECBlocks blocks = version.getECBlocksForLevel(errorLever);
 				//バージョンサイズ - ヘッダ分サイズ
-				byteSize = version.getTotalCodewords() - blocks.getTotalECCodewords() - 5;
+				byteSize = (version.getTotalCodewords() - blocks.getTotalECCodewords()) - 5;
 
 				//小サイズでの必要枚数計算
 				pageSize = new BigDecimal(contentsSize).divide(new BigDecimal(byteSize), 0, BigDecimal.ROUND_UP).intValue();
 				if (pageSize < maxQrSize) {
-					logger.info("version:{} byteSize:{}", i, byteSize);
+					logger.info("version:{} byteSize:{}", version.getVersionNumber(), byteSize);
 					logger.info("----------------");
 					break;
 				}
@@ -106,10 +111,8 @@ public class Application {
 
 			//QRコードのオプション指定
 			Hashtable<EncodeHintType, Object> hints = new Hashtable<>();
-			//低補正(L)
-			hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
-			//小サイズ(Version20)
-			hints.put(EncodeHintType.QR_VERSION, 20);
+			hints.put(EncodeHintType.ERROR_CORRECTION, errorLever);
+			hints.put(EncodeHintType.QR_VERSION, version.getVersionNumber());
 
 			for (int page = 0; page < pageSize; page++) {
 				int start = page * byteSize;
